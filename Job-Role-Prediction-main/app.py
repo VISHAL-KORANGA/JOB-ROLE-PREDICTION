@@ -5,7 +5,6 @@ import nltk
 from PyPDF2 import PdfReader
 
 # --- SETUP: Download NLTK resources and load models ---
-# This part runs only once when the script starts.
 @st.cache_resource
 def load_resources():
     nltk.download('punkt', quiet=True)
@@ -59,46 +58,95 @@ def main():
         initial_sidebar_state="collapsed"
     )
 
-    # --- CUSTOM CSS FOR STYLING ---
+    # --- PURPLE THEME CSS ---
     st.markdown("""
     <style>
-        /* Main background color */
+        /* App background */
         .stApp {
-            background-color: #F0F2F6;
+            background: linear-gradient(135deg, #ede7f6, #d1c4e9);
+            color: #2c0341;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
         }
 
-        /* Title styling */
-        .title {
-            font-family: 'Helvetica Neue', sans-serif;
-            color: #1E3A8A; /* Dark blue */
+        /* Headers */
+        h1.title {
+            color: #6a1b9a;
             text-align: center;
+            font-size: 42px;
+            font-weight: 700;
             padding-top: 20px;
+            margin-bottom: 0px;
         }
-
-        /* Subheader styling */
-        .subheader {
-            font-family: 'Helvetica Neue', sans-serif;
-            color: #4B5563; /* Gray */
+        p.subheader {
+            color: #4a148c;
             text-align: center;
-            margin-bottom: 2rem;
+            font-size: 18px;
+            margin-bottom: 20px;
         }
 
-        /* Result container styling */
-        .result-container {
-            background-color: #FFFFFF;
-            border-radius: 10px;
+        /* File uploader container */
+        div.stFileUploader {
+            background-color: #f3e5f5;
+            border: 2px dashed #7b1fa2;
+            border-radius: 12px;
             padding: 25px;
-            margin-top: 2rem;
-            border: 1px solid #E5E7EB;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             text-align: center;
         }
-        
-        /* Predicted role text styling */
+        div.stFileUploader label {
+            color: #4a148c;
+            font-weight: 600;
+        }
+
+        /* Buttons */
+        button.stButton>button {
+            background-color: #6a1b9a;
+            color: white;
+            font-weight: 600;
+            border-radius: 8px;
+            padding: 0.5em 1.5em;
+        }
+        button.stButton>button:hover {
+            background-color: #8e24aa;
+        }
+
+        /* Result container */
+        .result-container {
+            background-color: #f3e5f5;
+            border-radius: 16px;
+            padding: 30px;
+            margin-top: 20px;
+            border: 1px solid #ce93d8;
+            box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+            text-align: center;
+        }
         .prediction {
-            font-size: 28px;
-            font-weight: bold;
-            color: #10B981; /* Emerald Green */
+            font-size: 32px;
+            font-weight: 700;
+            color: #4a148c;
+            margin-top: 10px;
+        }
+
+        /* Info box styling */
+        div[data-baseweb="alert"] {
+            background-color: #e1bee7 !important;
+            border-radius: 12px !important;
+            border: 1px solid #ba68c8 !important;
+            color: #4a148c !important;
+        }
+
+        /* Text area for extracted snippet */
+        textarea {
+            background-color: #f8f0fa;
+            border: 1px solid #ce93d8;
+            border-radius: 8px;
+            padding: 10px;
+            font-family: 'Segoe UI', sans-serif;
+            color: #2c0341;
+        }
+
+        /* Description text */
+        .stMarkdown p {
+            color: #4a148c;
         }
     </style>
     """, unsafe_allow_html=True)
@@ -125,11 +173,11 @@ def main():
                     # --- File Processing and Prediction ---
                     if uploaded_file.type == "application/pdf":
                         resume_text = extract_text_from_pdf(uploaded_file)
-                    else: # For .txt files
+                    else:  # For .txt files
                         resume_text = uploaded_file.read().decode(errors="ignore")
 
-                    if not resume_text:
-                        st.error("❌ Could not extract text. The file might be empty or corrupted. Please try another one.")
+                    if not resume_text.strip():
+                        st.error("❌ Could not extract text. The file might be empty or corrupted.")
                         return
 
                     cleaned_resume = clean_resume(resume_text)
@@ -140,7 +188,7 @@ def main():
                     # --- Display Result ---
                     st.markdown('<div class="result-container">', unsafe_allow_html=True)
                     st.success("✅ Analysis Complete!")
-                    st.markdown("<p style='color: #4B5563;'>The resume is most likely for the role of:</p>", unsafe_allow_html=True)
+                    st.markdown("<p>The resume is most likely for the role of:</p>", unsafe_allow_html=True)
                     st.markdown(f'<p class="prediction">{category_name}</p>', unsafe_allow_html=True)
                     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -158,10 +206,10 @@ def main():
         
         1.  **Upload:** Provide a resume in `.pdf` or `.txt` format.
         2.  **Text Extraction:** The system extracts the raw text from the document.
-        3.  **Text Cleaning:** Irrelevant information like URLs, punctuation, and special characters are removed.
-        4.  **Prediction:** A pre-trained classification model analyzes the keywords and predicts the best-fit job role.
+        3.  **Text Cleaning:** Irrelevant information like URLs and special characters are removed.
+        4.  **Prediction:** A pre-trained model analyzes keywords to predict the best-fit job role.
         """)
-        st.info("ℹ️ **Disclaimer:** The model's prediction is based on the patterns it has learned from its training data. It is intended as a helpful suggestion, not a definitive classification.", icon="🤖")
+        st.info("Disclaimer: This model's prediction is based on the patterns from its training data. It is intended as a helpful suggestion, not a definitive classification.", icon="ℹ️")
 
 if __name__ == "__main__":
     main()
